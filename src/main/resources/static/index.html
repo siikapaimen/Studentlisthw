@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>React + Spring</title>
+</head>
+
+<body>
+    <div class='container'>
+        <div id='root'></div>
+	</div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react/15.3.2/react.min.js"></script>
+    <script src="https://fb.me/react-dom-15.0.1.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-core/5.8.24/browser.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"/>
+
+
+	<script type="text/babel">
+	class App extends React.Component {
+		  constructor(props) {
+		      super(props);
+              this.loadStudentsFromServer = this.loadStudentsFromServer.bind(this);
+              this.onDelete = this.onDelete.bind(this);
+		      this.state = {
+		          students: [],
+		      };
+		   }
+		 
+		  componentDidMount() {
+			// Call load students
+              this.loadStudentsFromServer();
+		  }
+		  
+		  // Load students from database
+		  loadStudentsFromServer() {
+              console.log('fetching...');
+              
+		      fetch('http://localhost:8080/api/students') 
+			  	// Write your code here for fetching students
+                .then(result => result.json())
+                .then(result => {
+                  var num = result._embedded.students.length;
+                  
+                  this.setState({students: result._embedded.students});
+                  })
+                  
+                  
+                  
+              }
+		           
+        //kerrotaan lapsenlapselle eli studentille deletestä
+//lapset kuuntelee vaan vanhempia eli appin pitää kertoa studentTableille
+        
+		  
+        onDelete(student){
+            fetch(student._links.self.href, {method: 'DELETE'})
+            .then(res => this.loadStudentsFromServer());
+            
+        }
+        
+        
+        
+		  
+		  render() {
+		    return (
+		       <div>
+        <StudentTable data={this.state.students} onDelete={this.onDelete}/>
+        
+		       </div>
+		    );
+		  }
+		}
+		    	
+	class StudentTable extends React.Component {
+		constructor(props) {
+			super(props);
+		}
+		    
+		render() {
+            	// Write your code here to render StudentTable
+                var rows = this.props.data.map(item =>
+                    <Student lodju={item} onDelete={this.props.onDelete}/>
+            );
+	    	return (
+        
+    <table>
+        <thead>
+          <tr>
+            <th>Firstname</th>
+            <th>Surname</th>
+              <th>Email</th>
+          </tr>
+        </thead>
+        <tbody>{rows}</tbody>
+        
+      </table>
+	   );
+	  }
+	}
+		        
+	class Student extends React.Component {
+	    constructor(props) {
+	        super(props);
+            this.handleDelete = this.handleDelete.bind(this);
+	    }
+        
+        handleDelete(){
+            this.props.onDelete(this.props.lodju);
+        }
+	 
+	    render() {
+	        return (
+				// Write your code here to render StudentTableRow
+                <tr>
+                    <td>{this.props.lodju.firstName}</td>
+                    <td>{this.props.lodju.lastName}</td>
+                    <td>{this.props.lodju.email}</td>
+                    <td><button onClick={this.handleDelete}>Delete</button></td>
+                </tr>);
+	    } 
+	}
+
+	ReactDOM.render(<App />, document.getElementById('root') );	
+	</script>
+
+</body>
+</html>
